@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>FitTracker</title>
+<link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<h1>FitTracker</h1>
+
+<button onclick="view='list';render()">List</button>
+<button onclick="view='add';render()">Add</button>
+<button onclick="view='stats';render()">Stats</button>
+
+<div id="app"></div>
+
+<script>
+let token="";
+let workouts=[];
+let view="list";
+
+navigator.serviceWorker.register('sw.js');
+
+async function login(){
+ let res=await fetch('http://localhost:3000/api/login',{method:'POST'});
+ let data=await res.json();
+ token=data.token;
+ load();
+}
+
+async function load(){
+ let res=await fetch('http://localhost:3000/api/workouts',{
+  headers:{Authorization:token}
+ });
+ workouts=await res.json();
+ render();
+}
+
+async function add(){
+ let name=prompt("Workout name");
+ await fetch('http://localhost:3000/api/workouts',{
+  method:'POST',
+  headers:{'Content-Type':'application/json',Authorization:token},
+  body:JSON.stringify({name})
+ });
+ load();
+}
+
+function render(){
+ let el=document.getElementById("app");
+ if(view==="list"){
+  el.innerHTML = workouts.map((w,i)=>
+   `<div>${w.name} 
+   <button onclick="del(${i})">X</button></div>`
+  ).join("");
+ }
+ if(view==="add"){
+  el.innerHTML = "<button onclick='add()'>Add workout</button>";
+ }
+ if(view==="stats"){
+  el.innerHTML = "Total workouts: " + workouts.length;
+ }
+}
+
+async function del(i){
+ await fetch('http://localhost:3000/api/workouts/'+i,{
+  method:'DELETE',
+  headers:{Authorization:token}
+ });
+ load();
+}
+
+login();
+</script>
+
+</body>
+</html>
