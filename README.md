@@ -1,5 +1,5 @@
 
-# FitTracker (3.5 version)
+# FitTracker (final version)
 
 ## Features
 - REST API (CRUD)
